@@ -1,0 +1,1 @@
+BYPASS_CTF{Aztec_Gold_Curse_Lifted}
