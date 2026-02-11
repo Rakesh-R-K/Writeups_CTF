@@ -1,0 +1,24 @@
+============================================================
+       Monkey Banana Signal CTF Solver
+============================================================
+
+🎮 Starting new game...
+📜 Sequence from cookie: [9, 9, 4, 3, 7, 3, 7, 3]
+🎯 Game length: 8 steps
+
+Step 1: Banana=9 → Learning...
+         Banana=9 → Position=2 ✓
+Step 2: Banana=9 → Position=2
+Step 3: Banana=4 → Learning...
+         Banana=4 → Position=7 ✓
+Step 4: Banana=3 → Learning...
+         Banana=3 → Position=9 ✓
+Step 5: Banana=7 → Learning...
+         Banana=7 → Position=1 ✓
+Step 6: Banana=3 → Position=9
+Step 7: Banana=7 → Position=1
+Step 8: Banana=3 → Position=9
+
+🎉 FLAG: BYPASS_CTF{s3rv3r_s1d3_sl4y_th1ngs}
+
+🚩 FINAL FLAG: BYPASS_CTF{s3rv3r_s1d3_sl4y_th1ngs}
