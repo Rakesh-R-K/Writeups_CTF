@@ -1,0 +1,28 @@
+PS C:\Downloads\breach\rusty_frame> wsl bash -lc "python3 - <<'PY'
+>> import subprocess
+>> cmd='/mnt/c/Users/Rakesh R K/Downloads/breach/rusty_frame/rusty_frame_S6NV0Zx'
+>> for arg in ['/etc/passwd','/dev/null','/proc/self/environ','/proc/cpuinfo']:
+>>     p=subprocess.run([cmd,arg], capture_output=True, timeout=2)
+>>     print('ARG',arg,'RET',p.returncode,'OUTLEN',len(p.stdout),'ERRLEN',len(p.stderr))
+>>     if p.stdout:
+>>         print('OUT snippet',p.stdout.decode(errors='replace')[:200])
+>>     if p.stderr:
+>>         print('ERR snippet',p.stderr.decode(errors='replace')[:200])
+>>     print('---')
+>> PY"
+ARG /etc/passwd RET 0 OUTLEN 24 ERRLEN 0
+OUT snippet bpctf{stand_proud_mate}
+
+---
+ARG /dev/null RET 0 OUTLEN 24 ERRLEN 0
+OUT snippet bpctf{stand_proud_mate}
+
+---
+ARG /proc/self/environ RET 0 OUTLEN 24 ERRLEN 0
+OUT snippet bpctf{stand_proud_mate}
+
+---
+ARG /proc/cpuinfo RET 0 OUTLEN 24 ERRLEN 0
+OUT snippet bpctf{stand_proud_mate}
+
+---
