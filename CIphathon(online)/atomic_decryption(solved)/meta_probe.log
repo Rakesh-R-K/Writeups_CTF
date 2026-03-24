@@ -1,0 +1,21 @@
+=== anon-default ===
+STATUS=401;X-CACHE=;VARY=Cookie;CT=application/json
+
+=== auth-default ===
+STATUS=200;X-CACHE=;VARY=Cookie;CT=application/json
+{"cached":false,"content":{"access_key":"AKIA-APEX-9921-X","flag":"CIPH{C4CH3_D3C3PT10N_IS_TH3_N3W_BLACK}","role":"Global Optimizer","server_status":"Overheated","username":"admin"},"x_header":"X-CACHE-MISS-FETCHED-FROM-ORIGIN"}
+
+=== auth-signature-staticcss ===
+STATUS=200;X-CACHE=;VARY=Cookie;CT=application/json
+{"cached":false,"content":{"access_key":"AKIA-APEX-9921-X","flag":"CIPH{C4CH3_D3C3PT10N_IS_TH3_N3W_BLACK}","role":"Global Optimizer","server_status":"Overheated","username":"admin"},"x_header":"X-CACHE-MISS-FETCHED-FROM-ORIGIN"}
+
+=== anon-signature-staticcss ===
+STATUS=401;X-CACHE=;VARY=Cookie;CT=application/json
+
+=== auth-signature-adminjson ===
+STATUS=200;X-CACHE=;VARY=Cookie;CT=application/json
+{"cached":false,"content":{"access_key":"AKIA-APEX-9921-X","flag":"CIPH{C4CH3_D3C3PT10N_IS_TH3_N3W_BLACK}","role":"Global Optimizer","server_status":"Overheated","username":"admin"},"x_header":"X-CACHE-MISS-FETCHED-FROM-ORIGIN"}
+
+=== anon-signature-adminjson ===
+STATUS=401;X-CACHE=;VARY=Cookie;CT=application/json
+

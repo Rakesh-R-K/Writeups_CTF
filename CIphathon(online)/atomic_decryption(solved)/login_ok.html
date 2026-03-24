@@ -1,0 +1,326 @@
+﻿
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ApexCache | Next-Gen Content Delivery</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #fbbf24; /* Amber 400 */
+            --primary-glow: rgba(251, 191, 36, 0.4);
+            --bg: #030305;
+            --surf: #0c0c14;
+            --card-hover: #12121e;
+            --border: #1e1e2e;
+            --text: #f8fafc;
+            --text-dim: #64748b;
+            --accent: #a78bfa; /* Violet 400 */
+            --transition: all 0.5s cubic-bezier(0.2, 1, 0.3, 1);
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; scroll-behavior: smooth; }
+        body { 
+            background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; 
+            line-height: 1.6; overflow-x: hidden;
+            background-image: radial-gradient(circle at 50% -20%, #1e1b4b 0%, var(--bg) 50%);
+        }
+        h1, h2, h3 { font-family: 'Space Grotesk', sans-serif; font-weight: 700; }
+
+        /* Navigation */
+        nav {
+            height: 72px; display: flex; align-items: center; justify-content: space-between;
+            padding: 0 6%; border-bottom: 1px solid var(--border);
+            position: fixed; top: 0; width: 100%; background: rgba(3,3,5,0.8); backdrop-filter: saturate(180%) blur(20px); z-index: 1000;
+        }
+        .logo { font-size: 1.4rem; color: #fff; text-decoration: none; font-weight: 800; letter-spacing: -1px; }
+        .logo span { color: var(--primary); }
+        .nav-links { display: flex; gap: 32px; list-style: none; align-items: center; }
+        .nav-links a { color: var(--text-dim); text-decoration: none; font-size: 0.85rem; font-weight: 600; transition: var(--transition); letter-spacing: 0.5px; }
+        .nav-links a:hover { color: var(--primary); }
+        
+        .btn { 
+            padding: 10px 24px; border-radius: 6px; font-weight: 600; cursor: pointer; transition: var(--transition); 
+            text-decoration: none; font-size: 0.8rem; border: 1px solid transparent; display: inline-block;
+        }
+        .btn-p { 
+            background: var(--primary); color: #000; 
+            box-shadow: 0 4px 14px 0 rgba(251,191,36,0.39);
+        }
+        .btn-p:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(251,191,36,0.5); }
+
+        /* Hero */
+        .hero { position: relative; height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 0 6%; overflow: hidden; }
+        .hero-mesh {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;
+            background-image: 
+                radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), 
+                radial-gradient(at 50% 0%, hsla(225,39%,30%,1) 0, transparent 50%), 
+                radial-gradient(at 100% 0%, hsla(339,49%,30%,1) 0, transparent 50%);
+            opacity: 0.3; filter: blur(100px);
+        }
+        .hero h1 { font-size: clamp(3rem, 8vw, 5.5rem); letter-spacing: -3px; line-height: 0.9; margin-bottom: 24px; color: #fff; }
+        .hero p { max-width: 650px; color: var(--text-dim); font-size: 1.1rem; margin-bottom: 40px; }
+
+        /* Stats Strip */
+        .stats-bar { 
+            width: 100%; background: var(--surf); border-y: 1px solid var(--border); padding: 24px 6%;
+            display: flex; justify-content: space-around; gap: 20px;
+        }
+        .stat-item { text-align: center; }
+        .stat-item .val { display: block; font-size: 1.5rem; font-weight: 800; color: #fff; }
+        .stat-item .lab { font-size: 0.7rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1.5px; }
+
+        /* Section Styling */
+        .section { padding: 120px 6%; position: relative; }
+        .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 32px; }
+        .card { 
+            background: var(--surf); padding: 40px; border-radius: 20px; border: 1px solid var(--border); 
+            transition: var(--transition); position: relative; overflow: hidden;
+        }
+        .card:hover { border-color: var(--primary); transform: translateY(-8px); background: var(--card-hover); }
+        .card::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(800px circle at var(--x) var(--y), rgba(251,191,36,0.06), transparent 40%);
+        }
+        .card h3 { margin-bottom: 16px; font-size: 1.4rem; color: #fff; }
+        .card p { color: var(--text-dim); font-size: 0.95rem; }
+
+        /* Dashboard & Console */
+        .dash-layout { display: grid; grid-template-columns: 1fr 340px; gap: 32px; margin-top: 48px; }
+        .main-console { background: var(--surf); border: 1px solid var(--border); border-radius: 24px; padding: 40px; }
+        .sidebar { display: flex; flex-direction: column; gap: 32px; }
+        
+        .side-widget { background: var(--surf); border: 1px solid var(--border); border-radius: 16px; padding: 24px; }
+        .widget-title { font-size: 0.8rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--primary); margin-bottom: 16px; }
+
+        .terminal { 
+            background: #050508; border-radius: 12px; border: 1px solid var(--border); padding: 24px; 
+            font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: #10b981; 
+            max-height: 300px; overflow-y: auto; box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+        }
+        .terminal-line { margin-bottom: 4px; border-left: 2px solid transparent; padding-left: 10px; }
+        .terminal-line.info { color: var(--accent); }
+        .terminal-line.warn { color: var(--primary); }
+
+        .status-tag { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 4px; font-size: 0.7rem; font-weight: 700; }
+        .hit { background: rgba(16,185,129,0.1); color: #10b981; }
+        .miss { background: rgba(239,68,68,0.1); color: #ef4444; }
+
+        /* Fake Map */
+        .map-bg { 
+            width: 100%; height: 200px; background: #08080c; border-radius: 12px; position: relative; overflow: hidden;
+            border: 1px solid var(--border);
+        }
+        .node { position: absolute; width: 6px; height: 6px; background: var(--primary); border-radius: 50%; box-shadow: 0 0 10px var(--primary); animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { opacity: 0.4; } 50% { opacity: 1; } 100% { opacity: 0.4; } }
+
+        /* Auth Modal */
+        .modal { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(3,3,5,0.95); backdrop-filter: blur(20px); 
+            display: none; align-items: center; justify-content: center; z-index: 2000;
+        }
+        .modal-body { background: var(--surf); width: 100%; max-width: 440px; padding: 48px; border-radius: 24px; border: 1px solid var(--border); box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); }
+        .inp { width: 100%; padding: 14px; background: #050508; border: 1px solid var(--border); border-radius: 8px; color: #fff; margin-bottom: 20px; outline: none; transition: var(--transition); }
+        .inp:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(251,191,36,0.1); }
+
+        footer { padding: 80px 6% 40px; border-top: 1px solid var(--border); text-align: center; }
+        .reveal { opacity: 0; transform: translateY(30px); transition: 1s cubic-bezier(0.2, 1, 0.3, 1); }
+        .reveal.active { opacity: 1; transform: translateY(0); }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <a href="/" class="logo">APEX<span>CACHE</span></a>
+        <ul class="nav-links">
+            <li><a href="#network">Network</a></li>
+            <li><a href="#topology">Topology</a></li>
+            <li><a href="#docs">Protocols</a></li>
+            
+            <li style="display:flex; align-items:center; gap:16px;">
+                <span style="font-size:0.7rem; color:var(--primary); font-weight:800; border:1px solid var(--primary); padding:2px 8px; border-radius:100px;">SYSTEM ADMIN</span>
+                <a href="/logout" class="btn btn-p" style="padding: 6px 16px;">SECURE EXIT</a>
+            </li>
+            
+        </ul>
+    </nav>
+
+    <section class="hero">
+        <div class="hero-mesh"></div>
+        <div class="reveal" style="text-transform:uppercase; letter-spacing:4px; font-weight:800; color:var(--primary); font-size:0.75rem; margin-bottom:24px;">Edge Propagation v4.28.0</div>
+        <h1 class="reveal">Next-Gen Content<br>Delivery Logic.</h1>
+        <p class="reveal">ApexCache leverages polymorphic edge-sharding to achieve sub-millisecond atomic propagation across the global invariant matrix.</p>
+        <div class="reveal" style="display:flex; gap:20px;">
+            
+            <a href="#dashboard" class="btn btn-p" style="padding:16px 40px; font-size:0.9rem;">ENTER MANAGEMENT CLUSTER</a>
+            
+        </div>
+    </section>
+
+    <div class="stats-bar">
+        <div class="stat-item"><span class="val">142</span><span class="lab">Edge Nodes</span></div>
+        <div class="stat-item"><span class="val">0.8ms</span><span class="lab">Avg TTL Purge</span></div>
+        <div class="stat-item"><span class="val">18.4 PB</span><span class="lab">Daily Ingress</span></div>
+        <div class="stat-item"><span class="val">99.999%</span><span class="lab">Availability</span></div>
+    </div>
+
+    
+    <section class="section" id="dashboard">
+        <div class="reveal" style="margin-bottom:48px;">
+            <h2 style="font-size:2.5rem;">Cluster Management Hub</h2>
+            <p style="color:var(--text-dim);">Real-time control over edge propagation and invariant cache-states.</p>
+        </div>
+
+        <div class="dash-layout reveal">
+            <div class="main-console">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:40px;">
+                    <h3>Edge Statistics Diagnostic</h3>
+                    <div class="status-tag hit">● Authenticated: admin@apexcache.io</div>
+                </div>
+
+                <div class="grid-3" style="grid-template-columns: repeat(2, 1fr);">
+                    <div class="card">
+                        <h3>Global Cache Hit</h3>
+                        <div style="height:120px; display:flex; align-items:flex-end; gap:8px; margin-top:20px;">
+                            <div style="flex:1; background:var(--primary); height:60%; border-radius:4px 4px 0 0;"></div>
+                            <div style="flex:1; background:var(--primary); height:85%; border-radius:4px 4px 0 0;"></div>
+                            <div style="flex:1; background:var(--primary); height:70%; border-radius:4px 4px 0 0;"></div>
+                            <div style="flex:1; background:var(--primary); height:95%; border-radius:4px 4px 0 0;"></div>
+                            <div style="flex:1; background:var(--primary); height:65%; border-radius:4px 4px 0 0;"></div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <h3>Identity Meta-Check</h3>
+                        <p style="margin-bottom:20px;">Diagnostic dump for the current invariant session.</p>
+                        <div class="terminal" id="meta-output">Fetching metadata...</div>
+                    </div>
+                </div>
+
+                <div style="margin-top:40px;">
+                    <h3 style="margin-bottom:20px;">Internal Routing Controls</h3>
+                    <div class="grid-3" style="grid-template-columns: repeat(3, 1fr);">
+                        <button class="btn" style="background:#13131f; border-color:var(--border);" onclick="alert('Network Sync Active')">Sync All Edges</button>
+                        <button class="btn" style="background:#13131f; border-color:var(--border);" onclick="alert('Polymorphic Sharding Enabled')">Sharding Status</button>
+                        <button class="btn" style="background:rgba(239,68,68,0.1); border-color:#ef4444; color:#ef4444;" onclick="fetch('/internal/v1/purge', {method:'POST'}).then(()=>alert('Cache Flushed'))">Global Purge</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar">
+                <div class="side-widget">
+                    <h4 class="widget-title">Live Node Logs</h4>
+                    <div class="terminal" style="height:250px; font-size:0.7rem; color:#64748b;">
+                        <div class="terminal-line info">18:42:01 INGRESS: HKG-04 Synchronized</div>
+                        <div class="terminal-line">18:42:05 PURGE: Asset /static/styles.css invalidated</div>
+                        <div class="terminal-line warn">18:42:09 PEERING: Latency spike in AMS-Edge-01</div>
+                        <div class="terminal-line info">18:42:12 SHARD: Invariant block #9822 confirmed</div>
+                        <div class="terminal-line">18:42:15 AUTH: Cluster session re-verified</div>
+                        <div class="terminal-line info">18:42:18 INGRESS: SYD-02 Buffer overflow prevented</div>
+                    </div>
+                </div>
+                <div class="side-widget" id="topology">
+                    <h4 class="widget-title">Edge Topology Map</h4>
+                    <div class="map-bg">
+                        <div class="node" style="top:20%; left:30%;"></div>
+                        <div class="node" style="top:40%; left:70%;"></div>
+                        <div class="node" style="top:70%; left:15%;"></div>
+                        <div class="node" style="top:10%; left:85%;"></div>
+                        <div class="node" style="top:60%; left:50%;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+
+    <section class="section" id="network">
+        <div class="reveal" style="text-align:center; margin-bottom:80px;">
+            <h2 style="font-size:3rem; margin-bottom:16px;">Core Infrastructure</h2>
+            <p style="color:var(--text-dim); max-width:700px; margin:0 auto;">Our distributed edge mesh operates with zero-trust architectural primitives to ensure atomic delivery of your invariant sharded assets.</p>
+        </div>
+        <div class="grid-3">
+            <div class="card reveal">
+                <div style="font-size:2rem; margin-bottom:20px;">⚡</div>
+                <h3>Atomic Purge</h3>
+                <p>Global invalidation propagates in less than 800ms via our proprietary gossip mesh. No more stale assets or laggy updates.</p>
+            </div>
+            <div class="card reveal">
+                <div style="font-size:2rem; margin-bottom:20px;">🛡️</div>
+                <h3>Shield Proxy</h3>
+                <p>Hierarchical caching layers protect your origin from 100% of static traffic surges while neutralizing Layer-7 anomalies.</p>
+            </div>
+            <div class="card reveal">
+                <div style="font-size:2rem; margin-bottom:20px;">🌀</div>
+                <h3>Smart Deception</h3>
+                <p>Advanced algorithmic shielding hides your cluster topology from external probing while maintaining deep packet inspection.</p>
+            </div>
+        </div>
+    </section>
+
+    <div class="modal" id="loginModal">
+        <div class="modal-body">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:32px;">
+                <h2 style="font-size:1.5rem;">Cluster Auth</h2>
+                <div style="cursor:pointer;" onclick="document.getElementById('loginModal').style.display='none'">✕</div>
+            </div>
+            <form action="/login" method="POST">
+                <label style="display:block; font-size:0.7rem; font-weight:800; color:var(--text-dim); margin-bottom:8px; text-transform:uppercase;">Identity Vector</label>
+                <input type="email" name="email" class="inp" placeholder="admin@apexcache.io" required>
+                <label style="display:block; font-size:0.7rem; font-weight:800; color:var(--text-dim); margin-bottom:8px; text-transform:uppercase;">Access Matrix Key</label>
+                <input type="password" name="password" class="inp" placeholder="••••••••••••" required>
+                <button type="submit" class="btn btn-p" style="width:100%; padding:14px; margin-top:10px;">ESTABLISH HANDSHAKE</button>
+            </form>
+            <p style="text-align:center; margin-top:32px; font-size:0.75rem; color:var(--text-dim);">Unauthorized access to ApexCache core is a violation of Global Invariant Protocols.</p>
+        </div>
+    </div>
+
+    <footer>
+        <div style="font-weight:900; font-size:1.2rem; margin-bottom:24px; color:#fff;">APEX<span>CACHE</span></div>
+        <p style="font-size:0.8rem; color:var(--text-dim); margin-bottom:8px;">&copy; 2026 ApexCache Invariants Inc. | Distributed Matrix Operations</p>
+        <p style="font-size:0.8rem; font-weight:700;">made with <span style="color:var(--primary);">ctf7 labs</span></p>
+    </footer>
+
+    <script>
+        function openLogin() { document.getElementById('loginModal').style.display='flex'; }
+        window.onclick = (e) => { if(e.target.id == 'loginModal') e.target.style.display='none'; }
+
+        function handleScroll() {
+            document.querySelectorAll('.reveal').forEach(el => {
+                const rect = el.getBoundingClientRect();
+                if (rect.top < window.innerHeight * 0.9) el.classList.add('active');
+            });
+        }
+        window.addEventListener('scroll', handleScroll);
+        window.addEventListener('load', handleScroll);
+
+        // Card Glow effect
+        document.querySelectorAll('.card').forEach(card => {
+            card.onmousemove = e => {
+                const rect = card.getBoundingClientRect();
+                card.style.setProperty('--x', `${e.clientX - rect.left}px`);
+                card.style.setProperty('--y', `${e.clientY - rect.top}px`);
+            };
+        });
+
+        
+        async function loadMeta() {
+            const res = await fetch('/api/v1/user/metadata');
+            const data = await res.json();
+            
+            const displayData = JSON.parse(JSON.stringify(data.content));
+            if(displayData.flag) displayData.flag = "REDACTED_ENCRYPTED_INVARIANT";
+
+            document.getElementById('meta-output').innerHTML = `
+                <div class="terminal-line info">[STATUS] X-Cache-Status: ${data.cached ? 'HIT' : 'MISS'}</div>
+                <div class="terminal-line">[DATA] Invariant Stream Decrypted...</div>
+                <div style="margin-top:10px; color:#f8fafc;"><pre style="font-size:0.7rem;">${JSON.stringify(displayData, null, 2)}</pre></div>
+            `;
+        }
+        loadMeta();
+        
+    </script>
+</body>
+</html>

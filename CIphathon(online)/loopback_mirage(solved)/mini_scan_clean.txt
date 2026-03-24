@@ -1,0 +1,4 @@
+403	GET	/api/v1/internal
+405	POST	/api/v1/internal
+403	GET	/api/v1/internal/debug
+405	POST	/api/v1/internal/debug

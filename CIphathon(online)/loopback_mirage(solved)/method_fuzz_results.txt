@@ -1,0 +1,10 @@
+403	GET	/api/v1/internal	Date: Sat, 14 Mar 2026 08:57:48 GMT Content-Type: text/html; charset=utf-8 Content-Length: 13 Connection: close Access Denied
+405	POST	/api/v1/internal	 <!doctype html> <html lang=en> <title>405 Method Not Allowed</title> <h1>Method Not Allowed</h1> <p>The method is not allowed for the reque
+405	PUT	/api/v1/internal	 <!doctype html> <html lang=en> <title>405 Method Not Allowed</title> <h1>Method Not Allowed</h1> <p>The method is not allowed for the reque
+405	PATCH	/api/v1/internal	 <!doctype html> <html lang=en> <title>405 Method Not Allowed</title> <h1>Method Not Allowed</h1> <p>The method is not allowed for the reque
+200	OPTIONS	/api/v1/internal	Date: Sat, 14 Mar 2026 08:57:51 GMT Content-Type: text/html; charset=utf-8 Allow: GET, HEAD, OPTIONS Content-Length: 0 Connection: close 
+403	GET	/api/v1/internal/debug	Date: Sat, 14 Mar 2026 08:57:51 GMT Content-Type: application/json Content-Length: 91 Connection: close {"flag":"CIPH{STAY_AI_HIDDEN_1337}",
+405	POST	/api/v1/internal/debug	 <!doctype html> <html lang=en> <title>405 Method Not Allowed</title> <h1>Method Not Allowed</h1> <p>The method is not allowed for the reque
+405	PUT	/api/v1/internal/debug	 <!doctype html> <html lang=en> <title>405 Method Not Allowed</title> <h1>Method Not Allowed</h1> <p>The method is not allowed for the reque
+405	PATCH	/api/v1/internal/debug	 <!doctype html> <html lang=en> <title>405 Method Not Allowed</title> <h1>Method Not Allowed</h1> <p>The method is not allowed for the reque
+200	OPTIONS	/api/v1/internal/debug	Date: Sat, 14 Mar 2026 08:57:54 GMT Content-Type: text/html; charset=utf-8 Allow: GET, HEAD, OPTIONS Content-Length: 0 Connection: close 
