@@ -1,0 +1,2 @@
+whitehat80@LAPTOP-8KGACGG4:/mnt/c/Users/Rakesh R K/Downloads/ciphathon/volatile_memory$ strings memory_dump.raw | grep "CIPH"
+Name: svchost.exe | PID: 1442 | Buffer: CIPH{RAM_NEVER_FORGETS_PERSISTENCE} | State: RUNNING
