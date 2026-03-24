@@ -1,0 +1,25 @@
+Foremost version 1.5.7 by Jesse Kornblum, Kris Kendall, and Nick Mikus
+Audit File
+
+Foremost started at Fri Feb 20 11:44:14 2026
+Invocation: foremost -i Marlboro.jpg -o output 
+Output directory: /mnt/c/Users/Rakesh R K/Downloads/bitsctf/marlboro/SaveMeFromThisHell/output
+Configuration file: /etc/foremost.conf
+------------------------------------------------------------------
+File: Marlboro.jpg
+Start: Fri Feb 20 11:44:14 2026
+Length: 4 MB (4738054 bytes)
+ 
+Num	 Name (bs=512)	       Size	 File Offset	 Comment 
+
+0:	00000000.jpg 	       3 MB 	          0 	 
+1:	00007332.zip 	     960 KB 	    3754399 	 
+Finish: Fri Feb 20 11:44:14 2026
+
+2 FILES EXTRACTED
+	
+jpg:= 1
+zip:= 1
+------------------------------------------------------------------
+
+Foremost finished at Fri Feb 20 11:44:14 2026
