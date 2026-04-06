@@ -1,0 +1,388 @@
+
+Challenge Title: ProfileHub
+Flag:  ctf7{w4sm_pr0t0_p0llut10n_ch41n_8db10fcd}
+Solved By: 3ll10t_5nd3rs0n
+Approach (Step by Step): 
+1.	I began by creating one stable session and saving the server-issued session cookie by calling /api/profile first.
+2.	I stored it in a cookie jar file named profilehub.cookie and reused only this same cookie file for every request.
+3.	I verified the pre-exploit state with /admin using the same cookie.
+            It returned 403 Admins only, confirming I was still a normal user.
+4.	I identified that the WASM validator is only client-side, so I skipped the frontend checks completely and talked to backend APIs directly.
+5.	I exploited the merge endpoint by sending a direct POST to /api/merge with this body:
+           {"base":{},"override":{"proto":{"isAdmin":true}}}
+           This polluted the prototype and made isAdmin truthy via inheritance.
+6.	I kept the exact same session cookie (profilehub.cookie) after that POST and rechecked /api/profile.
+            The response now reflected admin context and exposed privileged data,  
+            including the flag output path.
+7.	I confirmed the full impact by calling /admin again with the same cookie.
+           It was no longer 403, proving admin authorization was bypassed in-session.
+
+
+
+
+Challenge Title: 1D Card
+Flag:  KAAL{PUNCH_CARD_I5_50_C00L}
+Solved By: 3ll10t_5nd3rs0n
+Approach (Step by Step): 
+I extracted the challenge archive and found only one file with a .wav extension, so I started with file-type triage.
+
+I ran quick checks (archive listing, file signature check, and hex preview).
+The key finding was that the file did not behave like a real WAV and the hex content contained PNG chunk markers like IHDR and IDAT.
+
+That immediately told me the extension was a decoy and actual image data was embedded inside the so-called audio file.
+
+I checked the byte layout and confirmed this PNG stream was malformed only because the standard PNG magic bytes were missing at the beginning, and there was a junk/prefix region before IHDR.
+
+I located the IHDR start offset (47 bytes in this sample) and rebuilt a valid PNG by:
+
+adding PNG signature bytes at the front
+appending original file data from the IHDR offset onward
+Reconstruction command I used:
+(printf '\x89PNG\r\n\x1a\n' && dd if=1d.wav bs=1 skip=47 status=none) > recovered.png
+
+When I opened recovered.png, it showed an IBM-style punch card.
+So the remaining task was not stego brute force, but manual/logic decoding of punch positions by column.
+
+I decoded each column left to right using Hollerith rules:
+
+Zone rows: 12, 11, 0
+Numeric rows: 1 to 9
+12 + (1..9) gives A..I
+11 + (1..9) gives J..R
+0 + (2..9) gives S..Z
+Single numeric punch gives digits
+Special combos used here:
+12/5/8 gives {
+11/5/8 gives }
+0/5/8 gives _
+Column-by-column decoding produced:
+KAAL{PUNCH_CARD_I5_50_C00L}
+
+Recovered.png :
+ 
+
+
+Challenge Title: The Null Island Conspiracy
+Flag:  Kaal{nu!!_i$!@nd_w@$_n3v3r_3mpty}
+Solved By: 3ll10t_5nd3rs0n
+Approach (Step by Step): 
+I started with basic recon on the target root page and saw hints about JWT auth, geohash validation, and hidden routes.
+
+I checked /robots.txt first and discovered the important endpoints:
+/api/v3/geohash-debug-2025, /flag.txt, and /backup.bin.
+
+I verified /flag.txt was a decoy, so I focused on admin/debug paths instead of trusting the first flag-looking output.
+
+I tested authentication behavior and found the app accepted the token through a cookie, not through a Bearer header for the bypass path.
+
+I forged an unsigned JWT with alg set to none:
+Header: {"alg":"none","typ":"JWT"}
+Payload: {"username":"admin","role":"admin"}
+Token used: eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJ1c2VybmFtZSI6ImFkbWluIiwicm9sZSI6ImFkbWluIn0.
+
+I sent it as:
+Cookie: token=eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJ1c2VybmFtZSI6ImFkbWluIiwicm9sZSI6ImFkbWluIn0.
+Then /admin became accessible, confirming auth bypass.
+
+Next, I solved the geohash step by calling POST /api/v3/geohash-debug-2025 with JSON body containing 4 coordinates under coordinates.
+I used [[45,0],[45,0],[45,0],[45,0]] so all corners mapped to the same 4-char geohash.
+
+The successful response gave common_geohash as u000 and explicitly hinted to use this 4-char value as an AES key, zero-padded to 16 bytes, to decrypt /final.bin.
+
+I downloaded /final.bin and treated it as:
+first 16 bytes = IV,
+remaining bytes = ciphertext.
+
+I built the AES key as u000 plus 12 null bytes.
+Hex key: 75303030000000000000000000000000
+Then I decrypted with AES-128-CBC(openssl tool) using that key and extracted plaintext.
+
+The plaintext contained the real flag (with null padding at the end).
+
+
+
+Challenge Title: The Locked Core
+Flag:  Kaal{1_kn6vv_y6u_kh3473d_xdn}
+Solved By: 3ll10t_5nd3rs0n
+Approach (Step by Step): 
+I started by unpacking the APK and doing quick triage to identify the real entry points instead of brute-forcing UI behavior.
+
+From manifest-level inspection, I confirmed the package was com.example.ctf and the launch flow began from MainActivity, so I focused my reversing effort there first.
+
+I decompiled the app and traced the login path from MainActivity to the validation layer in Pipeline, where the actual credential checks were happening.
+
+In Pipeline logic, I found the check was not plain-text comparison. It was using encoded integer arrays and helper transforms (z1, x9, f2) before comparing user input.
+
+I extracted those embedded arrays and reversed each transform step-by-step to recover what input values would satisfy the final comparison.
+
+After reversing that pipeline, I recovered valid credentials:
+Username: NFSU
+Password: Chauhan512@
+
+I then followed the success branch after valid login and saw the app called CryptoUtils.x9f2d, which is where the next hidden layer was generated.
+
+I reversed x9f2d and found it builds a character array using mixed integer sources, including styleable constants, then applies XOR with 9 to each value.
+
+Converting that post-XOR output produced a meaningful obfuscated result, confirming this function was the real flag-generation stage and not just UI noise.
+
+At that point, I validated the decoded output against challenge context and expected submission pattern Kaal{...}, since some mobile challenges include one extra obfuscation/normalization layer in the displayed text.
+
+The accepted final flag was:
+Kaal{1_kn6vv_y6u_kh3473d_xdn}
+
+
+Challenge Title: The Package
+Flag:  Kaal{Py$nstaLLer_1s_N0t_Encrypt10n}
+Solved By: 3ll10t_5nd3rs0n
+Approach (Step by Step): 
+I started with basic triage by extracting greetings.zip and confirming there was only one artifact inside: greetings.
+
+I fingerprinted greetings and saw it was a stripped 64-bit ELF, then checked strings and found PyInstaller indicators like _MEI, PYZ.pyz, and pyimod modules.
+
+From that, I concluded this was not a native logic-heavy ELF solve, but a Python app bundled with PyInstaller.
+
+I tried executing the binary directly to see if it would reveal runtime output, but it failed due to a GLIBC version mismatch (GLIBC_ABI_DT_RELR not found).
+
+Since runtime was blocked, I switched to a fully static extraction path and unpacked the ELF internals with 7z.
+
+In the extracted sections, I focused on the large pydata region, because PyInstaller usually stores the CArchive payload there.
+
+I inspected bytes near the end of pydata and confirmed PyInstaller archive structure using markers like PYZ.pyz and the MEI cookie, which told me TOC metadata was present.
+
+I parsed the CArchive table of contents and found the important script entry named greetings, including its offset, compressed length, and compression flag.
+
+Using that TOC data, I carved exactly that byte range from pydata and saved it as a zlib blob.
+
+I decompressed the blob and inspected the recovered script payload strings.
+
+The flag appeared directly in the extracted content.
+
+
+
+Challenge Title: A Dream within a dream
+Flag:  Kaal{C00P3R 5T4Y M3SS4G3 F0UND}
+Solved By: 3ll10t_5nd3rs0n
+Approach (Step by Step): 
+I started by triaging the memory image dreamy_layers.raw to look for any obvious artifacts or plaintext flags; initial string scans found nothing useful.
+
+I searched the raw dump for ZIP signatures (PK\x03\x04) to locate embedded archives and carved out a suspected ZIP region, saving it as mini_local.zip. This gave me a workable archive file but it was password-protected.
+
+I confirmed mini_local.zip contained challenge.pcap but was encrypted, so I prepared to crack the ZIP password. I used zip2john to create a crackable hash and then used John the Ripper with the rockyou.txt wordlist (Kali) to recover the password; John returned gravity. This was the pivotal step: the zip password came from rockyou.txt.
+
+With the recovered password gravity, I extracted challenge.pcap from mini_local.zip and opened the capture for analysis.
+
+I inspected challenge.pcap and observed several protocols, but the most promising data was in ICMP frames - the ICMP payloads contained hex-like blobs that looked like layered encodings rather than plain text. I extracted the ICMP payload field for review.
+
+I collected the relevant ICMP payload hex chunks (the ones I used were):
+
+53324668624874444d4442514d314967
+4e5651305753424e4d314e544e45637a
+494559775655354566513d3d
+
+I decoded the chain exactly in the order revealed by inspection: convert each hex chunk to ASCII, concatenate the ASCII strings, then Base64-decode the result. I did this reliably with a short Python decode snippet so there was no human transcription error. The script I used (embedded as part of the step) was:
+import base64
+chunks = [
+    '53324668624874444d4442514d314967',
+    '4e5651305753424e4d314e544e45637a',
+    '494559775655354566513d3d'
+]
+ascii_joined = ''.join(bytes.fromhex(c).decode() for c in chunks)
+print("Base64:", ascii_joined)
+print("Decoded:", base64.b64decode(ascii_joined).decode())
+
+The Base64 decode produced the final plaintext flag:
+Kaal{C00P3R 5T4Y M3SS4G3 F0UND}
+
+
+
+
+Challenge Title: Carbon Reset
+Flag:  Kaal{arr4y_p0is0n_r3s3t_pwn3d}
+Solved By: 3ll10t_5nd3rs0n
+Approach (Step by Step): 
+I started by enumerating the site at http://138.199.163.92:12770/ and noted the key endpoints (/register, /login, /forgot-password, /reset, /mailbox, /dashboard), then read the site changelog to understand reset behavior and internal mail delivery.
+
+I created an attacker account to get an authenticated mailbox:
+
+Registered with username=hacker42, email=hacker42@emailaddress.com, password=Str0ngP@ss!.
+I logged in and verified /mailbox shows incoming messages for my account.
+I inspected the frontend code and found /forgot-password sends JSON via fetch(..., body: JSON.stringify({ email: email })), so the server accepts JSON for the email field rather than form data. That made me suspect a type-handling edge.
+
+Instead of sending a single email string, I sent an array of two addresses to /forgot-password so the server would process both recipients in one request:
+
+Request body: {"email":["om.nagda@kaalchakractf.com","hacker42@emailaddress.com"]}
+The server returned the normal "If that address is registered, a reset link has been sent." and the backend generated a reset token for Om's account but delivered the email to both recipients - including my attacker mailbox. This is the array-injection behavior in action.
+
+I checked my mailbox (/mailbox) while logged in as the attacker and found Om's reset email with the token link, for example:
+
+http://138.199.163.92:12770/reset?token=7792fb9a-61c8-4e94-b360-8a911294b8e7
+I used that token to reset Om Nagda's password by POSTing to /reset?token=7792fb9a-61c8-4e94-b360-8a911294b8e7 with password=H4ck3dP@ss!. The reset succeeded and cleared the account lock.
+
+I logged in as Om using email=om.nagda@kaalchakractf.com and password=H4ck3dP@ss!, navigated to /dashboard, and retrieved the protected evidence which contained the flag:
+
+Kaal{arr4y_p0is0n_r3s3t_pwn3d}
+Root cause (why this worked): the server did not validate the email field's type. When an array was supplied, the backend iterated over entries and sent reset emails to each, while generating a token for the victim address - effectively leaking the victim's reset token into the attacker's internal mailbox.
+
+Short mitigation I applied in my head and recommend to implement:
+
+Ensure the API enforces email is a string before processing:
+Limit/reset mailbox delivery logic to the authenticated recipient only, and avoid broadcasting tokens to multiple addresses.
+Notes and observations from my solve:
+Rate limiting on /login and UUIDv4 tokens prevent token brute force, so the array trick is the minimal, reliable path.
+I tried other vectors (re-registering victim email, host-header tricks, comma-separated emails) - none worked; the JSON array path is the effective exploit.
+Tools I used: browser for source inspection and manual HTTP requests (simple POSTs) to perform the exploit and verify mailboxes.
+
+
+Challenge Title: Hidden Comments
+Flag:  Kaal{h1dd3n_c0mm3nt_1d0r_byp4ss_737ad6de}
+Solved By: 3ll10t_5nd3rs0n
+Approach (Step by Step): 
+I started by inspecting the frontend and API calls to understand how comments are loaded; I noted endpoints used by the client: /api/me, /api/statuses, /api/hydration, and /api/v2/engagement.
+
+I created a normal user account and logged in to obtain an authenticated session cookie so I could call the same APIs the UI uses.
+
+I requested /api/hydration while authenticated and scanned the JSON for any leaked IDs; the hydration payload contained a hidden comment ID: c0mm3nt-h1dd3n-4ee7-b337-d1sc10s3d.
+
+I crafted an engagement call that targets that hidden Comment ID using my authenticated cookie; the server accepted the client-supplied entityId and returned the protected comment object (proof-of-concept request I sent as part of this step):
+POST /api/v2/engagement with JSON body:
+{
+"action": "heart",
+"entityType": "Comment",
+"entityId": "c0mm3nt-h1dd3n-4ee7-b337-d1sc10s3d"
+}
+and header Cookie: <authenticated-session-cookie> - the response included updatedTarget.body showing an admin-only note.
+
+From the returned comment body I read the flag.
+
+
+
+Challenge Title: Frequency Phantom
+Flag:  Kaal{r2p2t1t1on_add1ct10n_d2t2ct2d_99e98bd5}
+Solved By:  3ll10t_5nd3rs0n
+Approach (Step by Step): 
+I started by visiting the web app root and noticed a terminal-style frontend; the client sends user input to POST /run as JSON ({"cmd":"<input>"}) and the server source was exposed at /server.js, so I read the backend to understand the gating logic.
+
+In the server code I found the decoder rule and the exact success condition: the server decodes the submitted repeated-character stream and compares the decoded string to the literal cat flag.txt; if equal it returns process.env.FLAG.
+
+The decoder rule (position p = 0-index) is:
+expectedRepeat = ((ASCII(ch) % 5) + 3) + (p % 3)
+so each output character ch must appear repeated exactly that many times in the input to emit ch at position p.
+
+I computed the required repeat counts for the target string cat flag.txt:
+
+position 0: c ? 7
+position 1: a ? 6
+position 2: t ? 6
+position 3:   (space) ? 5
+position 4: f ? 6
+position 5: l ? 8
+position 6: a ? 5
+position 7: g ? 7
+position 8: . ? 6
+position 9: t ? 4
+position 10: x ? 4
+position 11: t ? 6
+To avoid manual transcription errors I generated the exact payload programmatically (example Python snippet I used):
+
+I sent the synthesized payload to the app as the cmd field. Example request I used (JSON body):
+(submitted to POST /run).
+
+The service decoded the input to cat flag.txt and returned the flag in its JSON response:
+{"output":"Kaal{r2p2t1t1on_add1ct10n_d2t2ct2d_99e98bd5}"}
+
+
+
+Challenge Title: Precision
+Flag:  Kaal{1f_TiMe_c4n_b3_cr34tEd,_th3n_s4rcAsm_cAn_d3fIne_it}
+Solved By: 3ll10t_5nd3rs0n
+Approach (Step by Step): 
+I began by triaging the ONNX model challenge_final.onnx: inspected metadata and ran string extraction to look for obvious flags or hints. That revealed several deliberate decoy entries (e.g., surface_flag, surface_envelope_*) which I treated as red herrings.
+
+I probed the model I/O with ONNX Runtime to understand the runtime surface (input shape [1,1,64,64], outputs like logits and fc2_out) so I knew which parts of the file were likely model weights vs. UI metadata.
+
+Because metadata looked intentionally noisy, I switched to weight inspection: I enumerated all initializer tensors from the graph and flattened their raw bytes into a single ordered stream to search for hidden channels (initializers are the most reliable place to hide stego payloads in ONNX).
+
+I extracted a bit-plane from the tensor stream rather than looking for ASCII directly - specifically I reinterpreted float32 bit patterns as integers and collected a chosen bit (LSB of the mantissa in my case) across the flattened weight sequence to build a continuous bitstream. This produced a framed payload when reassembled to bytes.
+
+In the reconstructed byte stream I found a clear marker and framing: WGT1|FLAG|<base64>|HINT|.... The base64 fragment I recovered was:
+S2FhbHsxZl9UaU1lX2M0bl9iM19jcjM0dEVkLF90aDNuX3M0cmNBc21fY0FuX2QzZkluZV9pdH0=
+
+I base64-decoded the framed payload which yielded the real flag.
+
+
+Challenge Title: Ghost Packets
+Flag:  Kaal{br3ak1ng_b4d_w1th_w1resh4rk}
+Solved By: 3ll10t_5nd3rs0n
+Approach (Step by Step): 
+
+1. I started by looking at the provided packet capture file, filechall.pcap. 
+2. I ran the strings command against the pcap file to see if anything interesting was left behind in plain text.
+3. I checked the last lines of the output and noticed multiple hex codes separated by hyphens standing out among the regular strings.
+4. The hex codes were:
+   4b-61-61-6c-7b-62-72-33-61-6b
+   31-6e-67-5f-62-34-64
+   5f-77-31-74-68
+   5f-77-31-72-65
+   73-68-34-72-6b-7d
+5. I took these hex codes and decoded them piece by piece into standard ASCII text.
+6. Finally, piecing the decoded text together gave me the complete flag.
+
+Challenge Title: Just a Calculator
+Flag:  Kaal{SYST3M_3p1l0gu3_c77466c7}
+Solved By: 3ll10t_5nd3rs0n
+Approach (Step by Step): 
+I connected to the service to interact with the calculator sandbox.
+
+I observed the service evaluates Python-like expressions but had some builtins removed (__import__, open), so I probed for introspection capabilities.
+().__class__.__base__.__subclasses__() - This revealed all the classes by the way.
+
+From the subclasses list I identified the BuiltinImporter class (index 84 in my run). 
+
+I leveraged BuiltinImporter to load the os module and run system commands, confirming code execution.
+
+I enumerated files to find interesting targets:
+
+Reading flag.txt indicated the flag was stored in an environment variable, so I dumped envvars and filtered for flag:
+().__class__.__base__.__subclasses__()[84].load_module('os').system('env|grep -i flag')
+
+
+Challenge Title: Schrodinger's Cipher
+Flag:  Kaal{2fun_br0k3n}
+Solved By: 3ll10t_5nd3rs0n
+Approach (Step by Step): 
+I opened the provided artifacts (encrypt.py, known_pair.txt, flag_cipher.txt, diagram.png) and confirmed the cipher structure: 16-byte blocks and CT = fun(k2, fun(k1, PT)) where k1 = key[:3], k2 = key[3:] and each fun does XOR-with-md5(key_part) ? SBOX ? PERM. ROUNDS, SBOX and PERM were not present in the code, so the next step was to recover them.
+
+I extracted the missing parameters from diagram.png using zsteg and the identified stego channel (b1,rgb,msb,xy). This revealed the hidden JSON with rounds = 22, the perm array and the full 256-byte sbox permutation. (example step I ran: zsteg -E b1,rgb,msb,xy diagram.png > hidden_payload.txt and parsed the JSON).
+
+With SBOX, PERM and ROUNDS recovered I implemented the inverse round: inverse PERM ? inverse SBOX ? XOR with md5(key_part). Since each fun is reversible, the overall decryption is PT = fun_dec(k1, fun_dec(k2, CT)).
+
+I used a meet?in?the?middle to recover the 6?byte key (k1 and k2 are each 3 bytes):
+
+For every possible k1 (0..2^24?1) compute M1 = fun(k1, PT) and store mapping M1 ? k1.
+For every possible k2 compute M2 = fun_dec(k2, CT) and check for M2 in the M1 table.
+A match yields candidate (k1,k2); validate by full encrypt/decrypt.
+This is feasible because each half is 24 bits (~16.7M entries); I parallelized/hashed the table to make lookups fast.
+The MITM returned the key halves:
+
+k1 = 0x071592
+k2 = 0x946fb0
+combined key material: 071592946fb0.
+I decrypted the flag ciphertext (adee3839c59e972f2b2e96440f0002d0) with the recovered key and the inverted rounds. The resulting 16-byte plaintext block was: Kaal{2fun_br0k3n
+
+
+Challenge Title: The Attack
+Flag:  Kaal{Ins3cur3_R3duc1ng}
+Solved By: 3ll10t_5nd3rs0n
+Approach (Step by Step): 
+I extracted the provided archive and inspected the binary - unzip greetings_JQWfzrE.zip produced a single ELF greetings, and file greetings confirmed it was a stripped 64-bit PyInstaller bundle.
+
+I scanned the binary strings and found PyInstaller markers (_MEI, PYZ.pyz, pyimod), so I unpacked it with pyinstxtractor.py and recovered the embedded Python artifacts (greetings.pyc, PYZ.pyz).
+
+I inspected the recovered Python bytecode and strings and found a decoy flag plus clear protocol hints: the app posts JSON with a key named obj containing hex-encoded pickled data to http://138.199.163.92:13696/api. That made insecure deserialization the primary suspicion.
+
+I reconstructed the client?server protocol: send JSON {"obj":"<hex_of_pickled_data>"} and the server unpickles the provided object. I crafted a minimal proof payload to execute a harmless command (e.g., ls -la) via a pickle object with a __reduce__ that runs a shell command, hex-encoded it, and POSTed it to the /api endpoint to confirm remote code execution.
+
+Confirming RCE, I listed files and found flag.txt in the app directory. Reading flag.txt returned a hint that the real flag was stored in an environment variable, so I executed env (via the same pickle exec vector) and filtered for flag-related variables.
+
+The environment revealed the flag variable.
+
